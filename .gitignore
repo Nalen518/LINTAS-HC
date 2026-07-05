@@ -1,0 +1,23 @@
+.venv
+__pycache__
+output/
+
+# Frontend (dashboard/)
+node_modules/
+.next/
+dashboard/prisma/data.db
+dashboard/.env
+dashboard/.env.*
+!dashboard/.env.example
+
+# Secrets (repo-wide)
+.env
+.env.*
+!.env.example
+
+# HuggingFace cache / model artifacts
+.cache/huggingface/
+*.safetensors
+*.bin
+*.pt
+*.onnx

@@ -1,0 +1,9 @@
+{
+  "suggested_hs_code": "720810",
+  "confidence": 87,
+  "reasoning": "Cold-rolled iron/steel coil matches HS Chapter 72 (Iron and Steel), subheading 720810.",
+  "alternative_codes": [
+    { "code": "720825", "reasoning": "Also cold-rolled coil but for narrower thickness" },
+    { "code": "720839", "reasoning": "General flat-rolled products of iron" }
+  ]
+}

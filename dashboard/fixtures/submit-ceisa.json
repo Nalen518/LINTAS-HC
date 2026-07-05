@@ -1,0 +1,12 @@
+{
+  "simulated": true,
+  "ceisa_payload": {
+    "note": "Full CEISA 4.0-compliant JSON built from ExtractedDocuments — placeholder until backend delivers the real payload shape."
+  },
+  "ceisa_ack": {
+    "status": "RECEIVED",
+    "pib_number": "PIB-2026-123456",
+    "received_at": "2026-06-29T14:23:15+07:00",
+    "estimated_clearance_lane": "GREEN"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "_comment": "Pre-computed demo run chaining extract -> validate -> submit-ceisa for the rehearsed demo path. Populate from a real ./dataset run before Phase 5 rehearsal.",
+  "extract": null,
+  "validate": null,
+  "submit_ceisa": null
+}

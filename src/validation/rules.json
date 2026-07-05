@@ -1,0 +1,32 @@
+{
+  "mandatory_fields": [
+    {"document": "commercial_invoice", "field": "importer_tax_id", "message": "Importer Tax ID is missing."},
+    {"document": "commercial_invoice", "field": "importer_name", "message": "Importer Name is missing."},
+    {"document": "commercial_invoice", "field": "currency", "message": "Currency is missing."},
+    {"document": "packing_list", "field": "total_gross_weight", "message": "Packing List total gross weight is missing."},
+    {"document": "bill_of_lading", "field": "total_gross_weight", "message": "Bill of Lading total gross weight is missing."}
+  ],
+  "hs_code_restrictions": [
+    {
+      "prefix": "72",
+      "description": "Besi dan Baja",
+      "required_permits": ["PI_Besi_Baja"],
+      "message": "Import Permit (PI_Besi_Baja) required for Iron and Steel (HS 72).",
+      "risk_weight": 25
+    },
+    {
+      "prefix": "61",
+      "description": "Pakaian dan Aksesori Pakaian",
+      "required_permits": ["LS_Tekstil"],
+      "message": "Surveyor Report (LS_Tekstil) required for Garments (HS 61).",
+      "risk_weight": 15
+    },
+    {
+      "prefix": "87",
+      "description": "Kendaraan Bermotor",
+      "required_permits": ["PI_Kendaraan"],
+      "message": "Import Permit (PI_Kendaraan) required for Vehicles (HS 87).",
+      "risk_weight": 30
+    }
+  ]
+}

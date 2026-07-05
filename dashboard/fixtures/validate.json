@@ -1,0 +1,28 @@
+{
+  "validation_id": "val_xyz789",
+  "confidence_score": 54.33,
+  "compliance_score": 75.0,
+  "risk_level": "High",
+  "ml_risk_probability": 99.97,
+  "warnings": [
+    {
+      "severity": "high",
+      "rule_id": "PI_BESI_BAJA",
+      "message": "Item Besi Baja Coil (HS 720810): Import Permit PI_Besi_Baja required for HS 72.",
+      "affected_fields": ["items[0].hs_code"],
+      "suggested_fix": "Attach PI_Besi_Baja document or update HS code."
+    },
+    {
+      "severity": "medium",
+      "rule_id": "WEIGHT_MISMATCH",
+      "message": "Gross weight differs between Packing List (25400 kg) and Bill of Lading (25000 kg).",
+      "affected_fields": ["packing_list.total_gross_weight", "bill_of_lading.total_gross_weight"],
+      "suggested_fix": "Confirm correct gross weight with shipper before submission."
+    }
+  ],
+  "shap_top_features": [
+    { "feature": "weight_mismatch", "value": 0.42, "label": "Weight mismatch across documents" },
+    { "feature": "missing_permit", "value": 0.31, "label": "Missing required import permit" },
+    { "feature": "qty_mismatch", "value": 0.18, "label": "Total quantity mismatch (CI vs PL)" }
+  ]
+}

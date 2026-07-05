@@ -1,0 +1,12 @@
+{
+  "status": "healthy",
+  "checks": {
+    "ollama": "reachable",
+    "paddleocr": "loaded",
+    "docling": "loaded",
+    "layoutlmv3": "loaded",
+    "table_transformer": "loaded",
+    "xgboost_model": "loaded"
+  },
+  "version": "0.1.0"
+}
