@@ -1,5 +1,11 @@
-// History list per PRD §5.12 (FR-12.x). Clerks see own declarations, Officers see org-wide.
-// TODO: not yet in Figma (ADR-008).
+import { PageHeader } from "@/components/ui/page-header";
+
+// Figma: "History" frame (100:1261); empty state "History — empty"
+// (100:1768). PRD §5.12 FR-12.x — single scope, no role split (ADR-009).
+// Table of all declarations (DeclarationRow), newest first; row click →
+// /dashboard/history/[id]. Empty state: illustration-free card with
+// "Start new declaration" CTA.
+// TODO(step 6): build to Figma spec.
 export default function HistoryPage() {
-  return <p>History list — pending Figma design (ADR-008).</p>;
+  return <PageHeader title="History" />;
 }

@@ -1,6 +1,8 @@
+# Python
 .venv
-__pycache__
+__pycache__/
 output/
+*.log
 
 # Frontend (dashboard/)
 node_modules/
@@ -10,10 +12,16 @@ dashboard/.env
 dashboard/.env.*
 !dashboard/.env.example
 
-# Secrets (repo-wide)
+# Secrets (repo-wide) — never commit credentials, keys, or certificates
 .env
 .env.*
 !.env.example
+*.pem
+*.key
+*.crt
+
+# Claude Code workspace (local tooling — do not publish)
+.claude/
 
 # HuggingFace cache / model artifacts
 .cache/huggingface/
@@ -21,3 +29,19 @@ dashboard/.env.*
 *.bin
 *.pt
 *.onnx
+
+# Build artifacts
+*.class
+*.exe
+*.dll
+dist/
+build/
+
+# IDE & editors
+.vscode/
+.idea/
+
+# OS trash
+.DS_Store
+Thumbs.db
+desktop.ini

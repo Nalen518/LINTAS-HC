@@ -1,18 +1,25 @@
-import Link from "next/link";
+import { LandingNav } from "@/components/landing/LandingNav";
+import { Hero } from "@/components/landing/Hero";
+import { WhatThisDoes } from "@/components/landing/WhatThisDoes";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { HowLintasThinks } from "@/components/landing/HowLintasThinks";
+import { BeforeAfter } from "@/components/landing/BeforeAfter";
+import { Footer } from "@/components/landing/Footer";
 
-// Placeholder — replaced by the full landing (6 sections per LANDING_COPY,
-// FR-8.x) in build step 3. Kept minimal so the route exists and the token
-// system can be smoke-tested.
+// Landing page — six sections in Figma canvas order (ADR-013: autonomy
+// levels cut, verdict section cut). Copy source: docs/LANDING_COPY.md.
+// Frames: Landing Page (20:11) → What this does (23:4) → How it works (34:9)
+// → How LINTAS thinks (37:11) → Before / After (38:13) → Footer (48:27).
 export default function LandingPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4">
-      <p className="font-serif text-display">LINTAS</p>
-      <Link
-        href="/dashboard"
-        className="rounded bg-primary px-4 py-2 text-sm text-primary-foreground transition-colors duration-150 ease-out-expo hover:bg-primary-hover"
-      >
-        Open dashboard
-      </Link>
+    <main>
+      <LandingNav />
+      <Hero />
+      <WhatThisDoes />
+      <HowItWorks />
+      <HowLintasThinks />
+      <BeforeAfter />
+      <Footer />
     </main>
   );
 }
