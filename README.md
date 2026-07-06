@@ -16,7 +16,7 @@ Complete project documentation lives outside this repo, at `../../docs/`. Read i
 8. **`../../docs/REFERENCES.md`** — Sources, citations, competitor analysis
 9. **`../../docs/DECISIONS.md`** — Architecture Decision Records (ADR log)
 
-If you clone only this code repository, you will not have the docs. Please clone the parent folder `AI Open Hackathon/` to get both together.
+If you clone only this code repository, you will not have the docs.
 
 ---
 ## Docker Setup (Recommended)
