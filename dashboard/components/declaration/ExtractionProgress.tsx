@@ -1,55 +1,57 @@
-import { IconCheck, IconLoader2 } from "@tabler/icons-react";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { StageList, type PipelineStage } from "@/components/declaration/StageList";
 
-// Figma: "New declaration — Processing" frame (75:620). PRD §5.2 FR-2.4.
-// MINIMAL version so the upload → processing route works end-to-end; the
-// full per-stage progress design (75:620) replaces this in step 5.
-// Degraded fallback state lives in ExtractionDegraded.tsx.
-const PIPELINE_STAGES = [
-  "Docling",
-  "PaddleOCR",
-  "LayoutLMv3",
-  "TableTransformer",
-  "Ollama",
-] as const;
-
+// Figma: "New declaration — Processing" → Processing card (75:648). PRD §5.2
+// FR-2.4. Live pipeline progress: a track, a percentage, and the 5 stages.
+// The percentage is derived from the stage statuses (a stage in progress
+// counts as half), matching the Figma "50% complete / LayoutLMv3 processing".
 export function ExtractionProgress({
-  status,
-  runtimeSeconds,
+  documentCount,
+  stages,
+  complete,
+  onContinue,
 }: {
-  status: "running" | "done";
-  runtimeSeconds?: number;
+  documentCount: number;
+  stages: PipelineStage[];
+  /** All stages resolved — swaps the footer note for a Continue action. */
+  complete?: boolean;
+  onContinue?: () => void;
 }) {
+  const done = stages.filter((s) => s.status === "done").length;
+  const running = stages.filter((s) => s.status === "processing").length;
+  const progress = Math.round(((done + 0.5 * running) / stages.length) * 100);
+
   return (
-    <div className="flex flex-col items-center gap-4 rounded-lg border border-border bg-card px-6 py-12">
-      {status === "running" ? (
-        <IconLoader2 size={28} stroke={2} className="animate-spin text-primary" />
-      ) : (
-        <IconCheck size={28} stroke={2} className="text-success" />
-      )}
-      <p className="text-sm font-medium text-foreground">
-        {status === "running"
-          ? "Extracting data from your documents"
-          : "Extraction complete"}
-      </p>
-      <div className="flex gap-2">
-        {PIPELINE_STAGES.map((stage) => (
-          <span
-            key={stage}
-            className={cn(
-              "rounded border border-border bg-elevated px-2.5 py-1 font-mono text-xs",
-              status === "running" ? "text-muted-foreground" : "text-foreground",
-            )}
-          >
-            {stage}
-          </span>
-        ))}
+    <div className="mx-auto flex w-[600px] max-w-full flex-col gap-5 rounded-lg border border-border bg-card p-8">
+      <div className="flex flex-col gap-1">
+        <span className="text-xl font-medium text-foreground">
+          {complete ? "Extraction complete" : "Extracting documents"}
+        </span>
+        <span className="text-body-sm text-faint">
+          {documentCount} documents · {complete ? "ready to review" : "running locally"}
+        </span>
       </div>
-      {status === "done" && runtimeSeconds !== undefined && (
-        <p className="text-xs text-faint">
-          Finished in {runtimeSeconds.toFixed(1)} s — review screens arrive in
-          build step 5.
-        </p>
+
+      <div className="h-2 w-full overflow-hidden rounded-pill bg-elevated">
+        <div
+          className="h-2 rounded-pill bg-primary transition-[width] duration-500 ease-out-expo"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <span className="text-xs text-faint">{progress}% complete</span>
+
+      <span className="h-px w-full bg-border" />
+
+      <StageList stages={stages} />
+
+      {complete && onContinue ? (
+        <div className="flex justify-end">
+          <Button onClick={onContinue}>Continue to review</Button>
+        </div>
+      ) : (
+        <span className="text-body-sm text-faint">
+          Runs locally on your machine — typically 30–60 seconds.
+        </span>
       )}
     </div>
   );

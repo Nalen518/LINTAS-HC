@@ -64,6 +64,8 @@ const config: Config = {
       fontSize: {
         // Display/Hero — 48/52 per LANDING_COPY §3 (supersedes the 40/44 draft in FIGMA_TOKENS §2.1)
         display: ["48px", { lineHeight: "52px", fontWeight: "400" }],
+        // Display/Section — Instrument Serif 28/36, landing section H2s (FIGMA_TOKENS §2.1)
+        section: ["28px", { lineHeight: "36px", fontWeight: "400" }],
         h4: ["18px", { lineHeight: "26px", fontWeight: "500" }],
         "body-sm": ["13px", { lineHeight: "20px" }],
         eyebrow: ["11px", { lineHeight: "16px", letterSpacing: "1.2px", fontWeight: "500" }],

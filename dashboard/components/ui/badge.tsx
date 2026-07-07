@@ -25,20 +25,27 @@ const toneDot: Record<RiskTone, string> = {
 
 export function Badge({
   tone,
+  size = "default",
   className,
 }: {
   tone: RiskTone;
+  /** "default" — bordered table pill; "sm" — compact borderless pill (Attention panel, 100:1132) */
+  size?: "default" | "sm";
   className?: string;
 }) {
+  const isSm = size === "sm";
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-pill border border-border bg-elevated px-2.5 py-1 text-badge",
+        "inline-flex items-center gap-1.5 rounded-pill bg-elevated text-xs font-medium",
+        isSm ? "px-2 py-[3px]" : "border border-border px-2.5 py-1",
         toneText[tone],
         className,
       )}
     >
-      <span className={cn("size-2 rounded-full", toneDot[tone])} />
+      <span
+        className={cn("rounded-full", isSm ? "size-1.5" : "size-2", toneDot[tone])}
+      />
       {toneLabel[tone]}
     </span>
   );

@@ -54,7 +54,10 @@ export type ExtractResponse = z.infer<typeof ExtractResponseSchema>;
 // backend is being built. Opt-in via NEXT_PUBLIC_USE_FIXTURES=true so it can
 // never silently mask a dead backend on demo day.
 const USE_FIXTURES = process.env.NEXT_PUBLIC_USE_FIXTURES === "true";
-const FIXTURE_DELAY_MS = 1400;
+// Long enough for the processing-screen pipeline animation to play through.
+const FIXTURE_DELAY_MS = 2600;
+// Follow-up calls (validate, predict) run after extraction — keep them snappy.
+const FIXTURE_SHORT_MS = 500;
 
 export async function extractDocuments(files: {
   commercial_invoice: File;
@@ -77,36 +80,113 @@ export async function extractDocuments(files: {
   return ExtractResponseSchema.parse(await res.json());
 }
 
-export async function validateDocuments(payload: { extraction_id: string; documents: unknown }) {
+// POST /api/validate response per API_CONTRACT §2 — the Validation Intelligence
+// Layer output (Permendag rules + cross-doc checks + XGBoost/SHAP risk).
+const WarningSchema = z.object({
+  severity: z.enum(["high", "medium", "low"]),
+  rule_id: z.string(),
+  message: z.string(),
+  affected_fields: z.array(z.string()),
+  suggested_fix: z.string(),
+});
+export type ValidationWarning = z.infer<typeof WarningSchema>;
+
+const ShapFeatureSchema = z.object({
+  feature: z.string(),
+  value: z.number(),
+  label: z.string(),
+});
+export type ShapFeature = z.infer<typeof ShapFeatureSchema>;
+
+const ValidateResponseSchema = z.object({
+  validation_id: z.string(),
+  confidence_score: z.number(),
+  compliance_score: z.number(),
+  risk_level: z.enum(["Low", "Medium", "High"]),
+  ml_risk_probability: z.number(),
+  warnings: z.array(WarningSchema),
+  shap_top_features: z.array(ShapFeatureSchema),
+});
+export type ValidateResponse = z.infer<typeof ValidateResponseSchema>;
+
+export async function validateDocuments(payload: {
+  extraction_id: string;
+  documents: unknown;
+}): Promise<ValidateResponse> {
+  if (USE_FIXTURES) {
+    const fixture = (await import("@/fixtures/validate.json")).default;
+    await new Promise((resolve) => setTimeout(resolve, FIXTURE_SHORT_MS));
+    return ValidateResponseSchema.parse(fixture);
+  }
   const res = await fetch(`${BASE_URL}/validate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw ErrorResponseSchema.parse(await res.json());
-  return res.json();
+  return ValidateResponseSchema.parse(await res.json());
 }
+
+// POST /api/predict-hs-code response per API_CONTRACT §3.
+const PredictHsCodeResponseSchema = z.object({
+  suggested_hs_code: z.string(),
+  confidence: z.number(),
+  reasoning: z.string(),
+  alternative_codes: z.array(
+    z.object({ code: z.string(), reasoning: z.string() }),
+  ),
+});
+export type PredictHsCodeResponse = z.infer<typeof PredictHsCodeResponseSchema>;
 
 export async function predictHsCode(payload: {
   item_description: string;
   country_of_origin: string;
   unit_of_measure: string;
-}) {
+}): Promise<PredictHsCodeResponse> {
+  if (USE_FIXTURES) {
+    const fixture = (await import("@/fixtures/predict-hs-code.json")).default;
+    await new Promise((resolve) => setTimeout(resolve, FIXTURE_SHORT_MS));
+    return PredictHsCodeResponseSchema.parse(fixture);
+  }
   const res = await fetch(`${BASE_URL}/predict-hs-code`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw ErrorResponseSchema.parse(await res.json());
-  return res.json();
+  return PredictHsCodeResponseSchema.parse(await res.json());
 }
 
-export async function submitCeisa(payload: { validation_id: string }) {
+// POST /api/submit-ceisa response per API_CONTRACT §4. SIMULATED only (ADR-002)
+// — `simulated: true` is required in every response and drives the Demo Mode
+// label. ceisa_payload is an opaque backend-built object (rendered as JSON).
+const CeisaAckSchema = z.object({
+  status: z.string(),
+  pib_number: z.string(),
+  received_at: z.string(),
+  estimated_clearance_lane: z.enum(["GREEN", "YELLOW", "RED"]),
+});
+
+const SubmitCeisaResponseSchema = z.object({
+  simulated: z.literal(true),
+  ceisa_payload: z.record(z.unknown()),
+  ceisa_ack: CeisaAckSchema,
+});
+export type SubmitCeisaResponse = z.infer<typeof SubmitCeisaResponseSchema>;
+
+export async function submitCeisa(payload: {
+  validation_id: string;
+}): Promise<SubmitCeisaResponse> {
+  if (USE_FIXTURES) {
+    const fixture = (await import("@/fixtures/submit-ceisa.json")).default;
+    await new Promise((resolve) => setTimeout(resolve, FIXTURE_SHORT_MS));
+    return SubmitCeisaResponseSchema.parse(fixture);
+  }
   const res = await fetch(`${BASE_URL}/submit-ceisa`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw ErrorResponseSchema.parse(await res.json());
-  return res.json();
+  return SubmitCeisaResponseSchema.parse(await res.json());
 }

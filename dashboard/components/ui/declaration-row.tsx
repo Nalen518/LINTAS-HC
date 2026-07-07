@@ -6,21 +6,21 @@ import { Badge, type RiskTone } from "@/components/ui/badge";
 // the consignee cell flexes.
 export type DeclarationStatus =
   | "submitted"
+  | "in review"
   | "processing"
-  | "needs review"
   | "draft";
 
 const statusDot: Record<DeclarationStatus, string> = {
   submitted: "bg-success",
+  "in review": "bg-warning",
   processing: "bg-info",
-  "needs review": "bg-warning",
   draft: "bg-faint",
 };
 
 const statusLabel: Record<DeclarationStatus, string> = {
   submitted: "Submitted",
+  "in review": "In review",
   processing: "Processing",
-  "needs review": "Needs review",
   draft: "Draft",
 };
 
