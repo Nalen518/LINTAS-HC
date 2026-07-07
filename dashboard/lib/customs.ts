@@ -37,11 +37,13 @@ export type ImpactBreakdown = {
 };
 
 // Indonesian import tax base (nilai impor) = customs value (CIF) + import duty.
+// `kurs` defaults to the assumption but is overridable from Settings (ADR-016).
 export function computeImpact(
   totalValueUsd: number,
   hsCode: string | null | undefined,
+  kurs: number = CUSTOMS_ASSUMPTIONS.kurs,
 ): ImpactBreakdown {
-  const { kurs, ppnRate, pph22Rate } = CUSTOMS_ASSUMPTIONS;
+  const { ppnRate, pph22Rate } = CUSTOMS_ASSUMPTIONS;
   const customsValueIdr = Math.round(totalValueUsd * kurs);
   const dutyRate = dutyRateForHs(hsCode);
   const importDuty = Math.round(customsValueIdr * dutyRate);
@@ -67,9 +69,18 @@ export const EFFORT_ASSUMPTIONS = {
   staffRatePerHour: 50000, // Rp
 };
 
-export function computeEffortSaved() {
-  const { manualPrepMinutes, withLintasMinutes, staffRatePerHour } =
-    EFFORT_ASSUMPTIONS;
+// Overridable from Settings (ADR-016); defaults to the baseline assumptions.
+export function computeEffortSaved(overrides?: {
+  manualPrepHours?: number;
+  staffRatePerHour?: number;
+}) {
+  const manualPrepMinutes =
+    overrides?.manualPrepHours != null
+      ? overrides.manualPrepHours * 60
+      : EFFORT_ASSUMPTIONS.manualPrepMinutes;
+  const staffRatePerHour =
+    overrides?.staffRatePerHour ?? EFFORT_ASSUMPTIONS.staffRatePerHour;
+  const { withLintasMinutes } = EFFORT_ASSUMPTIONS;
   const savedMinutes = manualPrepMinutes - withLintasMinutes;
   const savedHours = savedMinutes / 60;
   return {

@@ -1,19 +1,14 @@
 import type { RiskTone } from "@/components/ui/badge";
 import type { DeclarationStatus } from "@/components/ui/declaration-row";
 
-// Display mock data for the dashboard home. There is no dashboard aggregate
-// endpoint in docs/API_CONTRACT.md, so these are illustrative values for the
-// demo UI — matched to the Figma "Dashboard — Home" frame (100:1027).
-// Swap for real data once a stats endpoint exists (would need an ADR + contract entry).
+// Single source of declarations for the demo. The Dashboard home and History
+// page both derive from this list (see lib/dashboard.ts), so their numbers,
+// chart, recent list, and attention panel are always consistent. When the
+// backend exposes a declarations endpoint, replace this array with a fetch —
+// nothing else changes. (No dashboard/stats endpoint exists in API_CONTRACT
+// yet; that's tracked as future backend work.)
 
-export const DASHBOARD_STATS = {
-  declarationsThisMonth: 128,
-  pendingReview: 18,
-  flaggedHighRisk: 6,
-  avgFieldConfidence: 94,
-};
-
-export type RecentDeclaration = {
+export type Declaration = {
   id: string;
   importer: string;
   documentCount: number;
@@ -21,30 +16,26 @@ export type RecentDeclaration = {
   date: string;
   risk: RiskTone;
   status: DeclarationStatus;
+  /** Aggregate OCR field confidence for the declaration, 0–1. */
+  confidence: number;
 };
 
-export const RECENT_DECLARATIONS: RecentDeclaration[] = [
-  { id: "PIB-2026-0142", importer: "PT Sinar Jaya", documentCount: 3, date: "2026-07-05", risk: "high", status: "submitted" },
-  { id: "PIB-2026-0141", importer: "CV Mitra Abadi", documentCount: 3, date: "2026-07-05", risk: "low", status: "submitted" },
-  { id: "PIB-2026-0140", importer: "PT Global Trans", documentCount: 3, date: "2026-07-04", risk: "medium", status: "in review" },
-  { id: "PIB-2026-0139", importer: "PT Bahari Nusantara", documentCount: 3, date: "2026-07-04", risk: "low", status: "submitted" },
-  { id: "PIB-2026-0138", importer: "UD Sumber Rejeki", documentCount: 3, date: "2026-07-03", risk: "high", status: "in review" },
+// Kept name for existing imports.
+export type RecentDeclaration = Declaration;
+
+// Dates span the week ending Sunday 5 Jul 2026 so the weekly chart varies.
+export const DECLARATIONS: Declaration[] = [
+  { id: "PIB-2026-0142", importer: "PT Sinar Jaya", documentCount: 3, date: "2026-07-05", risk: "high", status: "submitted", confidence: 0.94 },
+  { id: "PIB-2026-0141", importer: "CV Mitra Abadi", documentCount: 3, date: "2026-07-05", risk: "low", status: "submitted", confidence: 0.97 },
+  { id: "PIB-2026-0140", importer: "PT Global Trans", documentCount: 3, date: "2026-07-04", risk: "medium", status: "in review", confidence: 0.91 },
+  { id: "PIB-2026-0139", importer: "PT Bahari Nusantara", documentCount: 3, date: "2026-07-03", risk: "low", status: "submitted", confidence: 0.95 },
+  { id: "PIB-2026-0138", importer: "UD Sumber Rejeki", documentCount: 3, date: "2026-07-03", risk: "high", status: "in review", confidence: 0.88 },
+  { id: "PIB-2026-0137", importer: "PT Karya Logam", documentCount: 3, date: "2026-07-02", risk: "medium", status: "submitted", confidence: 0.93 },
+  { id: "PIB-2026-0136", importer: "CV Anugerah Baja", documentCount: 3, date: "2026-07-01", risk: "low", status: "submitted", confidence: 0.96 },
+  { id: "PIB-2026-0135", importer: "PT Timur Sejahtera", documentCount: 3, date: "2026-06-30", risk: "low", status: "draft", confidence: 0.9 },
 ];
 
-export const WEEKLY_COUNTS: { day: string; count: number }[] = [
-  { day: "Mon", count: 8 },
-  { day: "Tue", count: 12 },
-  { day: "Wed", count: 6 },
-  { day: "Thu", count: 15 },
-  { day: "Fri", count: 10 },
-  { day: "Sat", count: 4 },
-  { day: "Sun", count: 2 },
-];
+// History renders the full list; kept as an alias for the single source.
+export const HISTORY_DECLARATIONS = DECLARATIONS;
 
 export type AttentionItem = { id: string; importer: string; risk: RiskTone };
-
-export const ATTENTION_ITEMS: AttentionItem[] = [
-  { id: "PIB-2026-0142", importer: "PT Sinar Jaya", risk: "high" },
-  { id: "PIB-2026-0138", importer: "UD Sumber Rejeki", risk: "high" },
-  { id: "PIB-2026-0140", importer: "PT Global Trans", risk: "medium" },
-];

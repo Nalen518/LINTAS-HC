@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Badge, type RiskTone } from "@/components/ui/badge";
 
@@ -30,6 +31,7 @@ export function DeclarationRow({
   date,
   risk,
   status,
+  href,
   className,
 }: {
   /** PIB number, e.g. "PIB-2026-0142" */
@@ -40,15 +42,12 @@ export function DeclarationRow({
   date: string;
   risk: RiskTone;
   status: DeclarationStatus;
+  /** When set, the whole row links here (History → detail). */
+  href?: string;
   className?: string;
 }) {
-  return (
-    <div
-      className={cn(
-        "flex h-14 items-center gap-4 border-b border-border bg-card px-4",
-        className,
-      )}
-    >
+  const content = (
+    <>
       <div className="w-[150px] shrink-0">
         <span className="font-mono text-xs text-foreground">{id}</span>
       </div>
@@ -67,6 +66,25 @@ export function DeclarationRow({
           {statusLabel[status]}
         </span>
       </div>
-    </div>
+    </>
   );
+
+  const base = "flex h-14 items-center gap-4 border-b border-border bg-card px-4";
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className={cn(
+          base,
+          "transition-colors duration-150 ease-out-expo hover:bg-elevated",
+          className,
+        )}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return <div className={cn(base, className)}>{content}</div>;
 }

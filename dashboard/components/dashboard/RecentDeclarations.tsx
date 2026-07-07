@@ -2,12 +2,16 @@ import Link from "next/link";
 import { IconArrowRight } from "@tabler/icons-react";
 import { DeclarationRow } from "@/components/ui/declaration-row";
 import { formatDate } from "@/lib/utils";
-import { RECENT_DECLARATIONS } from "@/lib/mock-data";
+import type { Declaration } from "@/lib/mock-data";
 
 // Figma: "Dashboard — Home" → Recent (100:1071). Section title + "View all"
 // link, then a table card (elevated header row + DeclarationRow list).
 // Column widths mirror DeclarationRow so header and cells stay aligned.
-export function RecentDeclarations() {
+export function RecentDeclarations({
+  declarations,
+}: {
+  declarations: Declaration[];
+}) {
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -31,7 +35,7 @@ export function RecentDeclarations() {
           <span className="w-[100px] shrink-0">Risk</span>
           <span className="w-[120px] shrink-0">Status</span>
         </div>
-        {RECENT_DECLARATIONS.map((d) => (
+        {declarations.map((d) => (
           <DeclarationRow
             key={d.id}
             id={d.id}
@@ -39,6 +43,7 @@ export function RecentDeclarations() {
             date={formatDate(d.date)}
             risk={d.risk}
             status={d.status}
+            href={`/dashboard/history/${d.id}`}
           />
         ))}
       </div>

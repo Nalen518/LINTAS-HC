@@ -228,11 +228,6 @@ export default function NewDeclarationPage() {
           extraction={extraction}
           validation={validation}
           hsPrediction={hsPrediction}
-          onSubmit={() => {
-            // TODO(task #6): open the confirm + simulated CEISA modals.
-            // eslint-disable-next-line no-console
-            console.log("submit:", validation.validation_id);
-          }}
         />
       )}
     </div>

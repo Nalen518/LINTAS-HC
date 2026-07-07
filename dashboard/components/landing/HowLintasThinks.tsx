@@ -25,7 +25,7 @@ export function HowLintasThinks() {
           How LINTAS thinks
         </span>
         <h2 className="font-serif text-section text-foreground">
-          A pipeline, not a black box.
+          Five stages you can inspect, from layout detection to final field.
         </h2>
         {COPY.map((paragraph) => (
           <p key={paragraph.slice(0, 24)} className="text-base text-muted-foreground">

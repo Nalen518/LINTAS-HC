@@ -61,7 +61,7 @@ export function HowItWorks() {
       <Reveal>
         <SectionHead
           eyebrow="How it works"
-          heading="From upload to submit, every step explains itself."
+          heading="Upload three documents, review extracted fields, submit to CEISA."
         />
       </Reveal>
       <Reveal className="flex w-full items-start">
@@ -76,8 +76,8 @@ export function HowItWorks() {
                     i === 0 ? "bg-transparent" : "bg-border",
                   )}
                 />
-                <span className="flex size-12 items-center justify-center rounded-pill border-[1.5px] border-border-emphasis bg-card">
-                  <StepIcon size={24} stroke={2} className="text-primary" />
+                <span className="flex size-10 items-center justify-center rounded-pill border-[1.5px] border-border-emphasis bg-card">
+                  <StepIcon size={20} stroke={2} className="text-primary" />
                 </span>
                 <span
                   className={cn(

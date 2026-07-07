@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { TabBar } from "@/components/ui/tab-bar";
 import { ResultsSummary } from "@/components/declaration/ResultsSummary";
@@ -9,11 +10,16 @@ import { ValidationTab } from "@/components/declaration/ValidationTab";
 import { RiskShapTab } from "@/components/declaration/RiskShapTab";
 import { HsCodeTab } from "@/components/declaration/HsCodeTab";
 import { ImpactTab } from "@/components/declaration/ImpactTab";
+import { ConfirmCeisaModal } from "@/components/declaration/ConfirmCeisaModal";
+import { CeisaSubmitModal } from "@/components/declaration/CeisaSubmitModal";
+import { ShareModal } from "@/components/declaration/ShareModal";
 import { flattenExtractedFields } from "@/lib/results";
-import type {
-  ExtractResponse,
-  ValidateResponse,
-  PredictHsCodeResponse,
+import {
+  submitCeisa,
+  type ExtractResponse,
+  type ValidateResponse,
+  type PredictHsCodeResponse,
+  type SubmitCeisaResponse,
 } from "@/lib/api";
 
 // The Results review screen (PRD §5.3–5.4): summary + 5 tabs, all rendered
@@ -36,18 +42,51 @@ export function ResultsView({
   extraction,
   validation,
   hsPrediction,
-  onSubmit,
+  readOnly = false,
+  shareId,
 }: {
   extraction: ExtractResponse;
   validation: ValidateResponse;
   hsPrediction: PredictHsCodeResponse | null;
-  onSubmit: () => void;
+  /** History detail reuses this view without the submit action. */
+  readOnly?: boolean;
+  /** When set (a PIB), shows a Share action that opens the copy-link modal. */
+  shareId?: string;
 }) {
+  const router = useRouter();
   const [active, setActive] = useState<TabId>("fields");
-  const fields = flattenExtractedFields(extraction.documents);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitResponse, setSubmitResponse] =
+    useState<SubmitCeisaResponse | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
 
+  const fields = flattenExtractedFields(extraction.documents);
   const ci = extraction.documents.commercial_invoice as CiDoc;
   const primaryItem = ci?.items?.[0];
+
+  async function handleConfirmSubmit() {
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      // SIMULATED submission only (ADR-002) — the backend returns a synthetic
+      // acknowledgment; nothing reaches DJBC.
+      const response = await submitCeisa({
+        validation_id: validation.validation_id,
+      });
+      setSubmitResponse(response);
+      setConfirmOpen(false);
+    } catch (err) {
+      setSubmitError(
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: unknown }).message)
+          : "Submission failed — please try again.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -59,9 +98,22 @@ export function ResultsView({
           active={active}
           onChange={(id) => setActive(id as TabId)}
         />
-        <Button size="md" onClick={onSubmit}>
-          Continue to submit
-        </Button>
+        <div className="flex items-center gap-3">
+          {shareId && (
+            <Button
+              size="md"
+              variant="secondary"
+              onClick={() => setShareOpen(true)}
+            >
+              Share
+            </Button>
+          )}
+          {!readOnly && (
+            <Button size="md" onClick={() => setConfirmOpen(true)}>
+              Continue to submit
+            </Button>
+          )}
+        </div>
       </div>
 
       <div>
@@ -84,6 +136,34 @@ export function ResultsView({
         )}
         {active === "impact" && <ImpactTab documents={extraction.documents} />}
       </div>
+
+      {!readOnly && (
+        <>
+          <ConfirmCeisaModal
+            open={confirmOpen}
+            validation={validation}
+            submitting={submitting}
+            error={submitError}
+            onCancel={() => setConfirmOpen(false)}
+            onConfirm={handleConfirmSubmit}
+          />
+
+          <CeisaSubmitModal
+            open={submitResponse !== null}
+            response={submitResponse}
+            onClose={() => setSubmitResponse(null)}
+            onDone={() => router.push("/dashboard")}
+          />
+        </>
+      )}
+
+      {shareId && (
+        <ShareModal
+          open={shareOpen}
+          pibNumber={shareId}
+          onClose={() => setShareOpen(false)}
+        />
+      )}
     </div>
   );
 }

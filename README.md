@@ -2,6 +2,20 @@
 
 This project automates the extraction and validation of Indonesian customs workflows. It combines PaddleOCR, Docling, LayoutLMv3, TableTransformer, and Ollama for extracting text from trade documents (Commercial Invoice, Packing List, Bill of Lading) and pipes it into an **Explainable ML Validation Intelligence Layer** to predict CEISA rejection risks based on Permendag rules.
 
+## Repository layout (3-part project)
+
+| Part | Location | Owner |
+|---|---|---|
+| **Frontend** (Next.js dashboard) | `dashboard/` — see [`dashboard/README.md`](dashboard/README.md) | Frontend |
+| **Backend** (FastAPI validation + rules + XGBoost/SHAP) | `src/validation/` | Backend |
+| **ML / OCR pipeline** (Docling → PaddleOCR → LayoutLMv3 → TableTransformer → Ollama) | `src/module/` | ML |
+
+The three connect through **one API contract**: `../../docs/API_CONTRACT.md`. The
+frontend calls `/api/backend/*` (proxied to the backend's `/api/*`) and renders
+whatever the backend/ML return. See [`dashboard/README.md`](dashboard/README.md)
+→ "How the frontend talks to the backend + ML" for the exact endpoints, shapes,
+and the switch from fixtures to the real backend.
+
 ## Full Documentation
 
 Complete project documentation lives outside this repo, at `../../docs/`. Read in this order:

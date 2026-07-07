@@ -26,8 +26,8 @@ export function Hero() {
           For Cikarang Dryport authorized staff
         </span>
         <h1 className="flex flex-col font-serif text-display">
-          <span className="text-foreground">AI you can question.</span>
-          <span className="italic text-primary">Declarations you can trust.</span>
+          <span className="text-foreground">Check every field.</span>
+          <span className="italic text-primary">Know why it was flagged.</span>
         </h1>
         <p className="text-base text-muted-foreground">
           LINTAS reads your Commercial Invoice, Packing List, and Bill of Lading
@@ -43,7 +43,7 @@ export function Hero() {
           Open dashboard
         </Button>
         <p className="text-xs text-muted-foreground">
-          No sign-in, opens straight into the workspace.
+
         </p>
       </Reveal>
 
@@ -67,18 +67,16 @@ export function Hero() {
               <div key={row.label} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span
-                    className={`h-2.5 rounded-[3px] ${row.barClass} ${
-                      row.raises ? "bg-risk-high" : "bg-risk-low"
-                    }`}
+                    className={`h-2.5 rounded-[3px] ${row.barClass} ${row.raises ? "bg-risk-high" : "bg-risk-low"
+                      }`}
                   />
                   <span className="text-body-sm text-muted-foreground">
                     {row.label}
                   </span>
                 </div>
                 <span
-                  className={`font-mono text-mono-sm ${
-                    row.raises ? "text-risk-high" : "text-risk-low"
-                  }`}
+                  className={`font-mono text-mono-sm ${row.raises ? "text-risk-high" : "text-risk-low"
+                    }`}
                 >
                   {row.value}
                 </span>

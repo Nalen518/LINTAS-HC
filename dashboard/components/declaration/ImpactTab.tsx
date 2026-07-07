@@ -1,6 +1,13 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { formatRupiah } from "@/lib/utils";
 import { computeImpact, computeEffortSaved } from "@/lib/customs";
+import {
+  loadImpactSettings,
+  DEFAULT_IMPACT_SETTINGS,
+} from "@/lib/settings";
 import type { ExtractResponse } from "@/lib/api";
 
 // Figma: "Results · Impact" tab content (88:645). FR-7.x as amended by ADR-016.
@@ -63,14 +70,22 @@ export function ImpactTab({
 }: {
   documents: ExtractResponse["documents"];
 }) {
+  // Read the user's Impact assumptions (Settings, ADR-016) after mount.
+  const [settings, setSettings] = useState(DEFAULT_IMPACT_SETTINGS);
+  useEffect(() => setSettings(loadImpactSettings()), []);
+
   const ci = documents.commercial_invoice as CiDoc;
   const totalValue = typeof ci?.total_value === "number" ? ci.total_value : 0;
   const currency = ci?.currency ?? "USD";
   const hsCode = ci?.items?.[0]?.hs_code ?? null;
 
-  const impact = computeImpact(totalValue, hsCode);
-  const effort = computeEffortSaved();
+  const impact = computeImpact(totalValue, hsCode, settings.kurs);
+  const effort = computeEffortSaved({
+    manualPrepHours: settings.manualPrepHours,
+    staffRatePerHour: settings.staffRatePerHour,
+  });
   const savedHrs = (Math.floor(effort.savedHours * 10) / 10).toString();
+  const manualLabel = `~${settings.manualPrepHours} hrs`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -133,7 +148,7 @@ export function ImpactTab({
           </span>
         </div>
         <div className="flex gap-10">
-          <EffortStat label="Manual prep (assumed)" value="~3 hrs" />
+          <EffortStat label="Manual prep (assumed)" value={manualLabel} />
           <EffortStat label="With LINTAS" value="~2 min" />
           <EffortStat label="Time saved" value={`~${savedHrs} hrs`} accent />
         </div>

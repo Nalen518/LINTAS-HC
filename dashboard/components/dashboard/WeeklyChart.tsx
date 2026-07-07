@@ -2,17 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { Bar, BarChart, ResponsiveContainer, XAxis } from "recharts";
-import { WEEKLY_COUNTS } from "@/lib/mock-data";
 
 // Figma: "Dashboard — Home" → Chart (100:1098). Emerald bar chart of the last
-// 7 days' declaration counts (Recharts per TECH_STACK).
+// 7 days' declaration counts (Recharts per TECH_STACK). Data is derived from
+// the declarations list (see lib/dashboard.ts) and passed in.
 //
 // Recharts renders SVG `fill` as an attribute, where CSS var() does not
 // resolve — so we read the design tokens at runtime and pass literal values.
 // The initial values mirror --primary / --faint for the pre-hydration paint.
 const FALLBACK = { bar: "#065f46", axis: "#9ca3af" };
 
-export function WeeklyChart() {
+export function WeeklyChart({
+  data,
+}: {
+  data: { day: string; count: number }[];
+}) {
   const [colors, setColors] = useState(FALLBACK);
 
   useEffect(() => {
@@ -33,7 +37,7 @@ export function WeeklyChart() {
       </div>
       <div className="min-h-0 flex-1">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={WEEKLY_COUNTS} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
+          <BarChart data={data} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
             <XAxis
               dataKey="day"
               tickLine={false}

@@ -24,7 +24,7 @@ export function WhatThisDoes() {
       <Reveal>
         <SectionHead
           eyebrow="What this does"
-          heading="See the reasoning behind every number."
+          heading="Confidence scores, rule citations, and risk breakdowns for every field."
         />
       </Reveal>
       <Reveal className="flex gap-8">

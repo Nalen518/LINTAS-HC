@@ -1,97 +1,137 @@
-# LINTAS dashboard — code-along map
+# LINTAS — Frontend (dashboard/)
 
-Frontend for LINTAS (Next.js 14 App Router + Tailwind + Tabler icons).
-Every file below maps 1:1 to a frame in the Figma file
-([Lintas](https://www.figma.com/design/LXlUR5tBGnKe058EnXsByO/Lintas)) — open the
-file, find the node id in its header comment, build to spec (ADR-008).
+The Next.js dashboard for LINTAS, the AI customs-declaration tool for Cikarang
+Dryport (AI Open Hackathon 2026 semifinal). This folder is the **frontend
+only**. The backend + ML pipeline live in `../src/` (see the root `README.md`).
 
-Copy sources: `../../docs/LANDING_COPY.md` (landing) · `../../PRD.md` (app).
-Tokens: `app/globals.css` + `tailwind.config.ts` (from `docs/FIGMA_TOKENS.md`).
-API shapes: `../../docs/API_CONTRACT.md` — never invent a field or endpoint.
+- **Stack:** Next.js 14 (App Router) · TypeScript (strict) · Tailwind · Recharts · Framer Motion · Tabler icons
+- **No auth** — the app opens straight into `/dashboard` (ADR-009).
+- **CEISA is simulated** — never a real DJBC call (ADR-002). The response modal shows "Simulated CEISA Response (Demo Mode)".
+- **Design source of truth:** Figma (every screen is built to a frame); tokens in `app/globals.css` + `tailwind.config.ts`.
 
-## Run
+---
+
+## Quick start
 
 ```bash
+cd dashboard
 pnpm install
-pnpm dev        # localhost:3000
-pnpm build      # run before every commit — catches type errors
+cp .env.example .env.local     # then edit if needed
+pnpm dev                       # → http://localhost:3005
 ```
 
-## Routes (app/)
+> Port is **3005**, not 3000 (3000 is reserved on some Windows setups).
+> `pnpm build` runs a production build; `pnpm exec tsc --noEmit` type-checks
+> without touching `.next` (use this while a dev server is running).
 
-| Route | File | Figma frame | Status |
-|---|---|---|---|
-| `/` | `app/page.tsx` | Landing sections, in order | scaffold |
-| `/dashboard` | `app/dashboard/page.tsx` | Dashboard — Home (100:1027) | scaffold |
-| `/dashboard/new` | `app/dashboard/new/page.tsx` | Upload → Processing → Results → Submit (see file header) | scaffold |
-| `/dashboard/history` | `app/dashboard/history/page.tsx` | History (100:1261) · empty (100:1768) | scaffold |
-| `/dashboard/history/[id]` | `app/dashboard/history/[id]/page.tsx` | no frame — reuses Results read-only | scaffold |
-| `/dashboard/settings` | `app/dashboard/settings/page.tsx` | Settings (100:1453) | scaffold |
-| `/dashboard/help` | `app/dashboard/help/page.tsx` | Help (100:1551) | scaffold |
-| shell | `app/dashboard/layout.tsx` | Sidebar + content split (ADR-015) | **done** |
-| proxy | `app/api/backend/[...path]/route.ts` | → FastAPI `/api/*` | **done** |
+### Environment variables (`.env.local`)
 
-## Landing sections (components/landing/) — build order top→bottom
-
-| File | Figma frame | Copy |
+| Var | Default | Purpose |
 |---|---|---|
-| `LandingNav.tsx` | Landing Page (20:11) nav / Nav symbol (8:17) | LANDING_COPY §2 |
-| `Hero.tsx` | Landing Page (20:11) | §3 |
-| `WhatThisDoes.tsx` | What this does (23:4) | §4 |
-| `HowItWorks.tsx` | How it works (34:9) | §5 |
-| `HowLintasThinks.tsx` | How LINTAS thinks (37:11) | §6 |
-| `BeforeAfter.tsx` | Before / After (38:13) | §7 |
-| `Footer.tsx` | Footer (48:27) | §8 |
+| `BACKEND_URL` | `http://localhost:8000` | Where the FastAPI backend runs. The frontend proxies to it. |
+| `NEXT_PUBLIC_USE_FIXTURES` | `true` | `true` = use local `fixtures/*.json` (dev without a backend). **Set `false` to call the real backend.** |
 
-## Declaration workflow (components/declaration/) — /dashboard/new
+---
 
-| File | Figma frame | Phase |
+## How the frontend talks to the backend + ML  ← read this before merging
+
+This is the single integration seam. **The frontend never calls the backend
+directly** — it calls `/api/backend/*`, which `next.config.mjs` rewrites to
+`${BACKEND_URL}/api/*`. So the backend just needs to serve `/api/*`.
+
+Every call lives in **`lib/api.ts`**, typed and **zod-validated against
+`../../docs/API_CONTRACT.md`** (the shared contract — do not change a shape on
+one side only).
+
+| Frontend call (`lib/api.ts`) | Backend endpoint | Owner |
 |---|---|---|
-| `Stepper.tsx` | 85:300 (on every workflow screen) | all |
-| `UploadZone.tsx` | Upload (69:383) | 1 |
-| `ExtractionProgress.tsx` | Processing (75:620) | 2 |
-| `ExtractionDegraded.tsx` | Extraction degraded (100:1785) | 2 (error) |
-| `ResultsSummary.tsx` | Summary cards (85:322) | 3 |
-| `ExtractedFieldsTab.tsx` | Extracted Fields (84:534) | 3 · tab 1 |
-| `ConfidenceField.tsx` | field row inside 84:534 | 3 · tab 1 |
-| `ValidationTab.tsx` | Results · Validation (86:337) | 3 · tab 2 |
-| `RiskShapTab.tsx` | Results · Risk & SHAP (85:296) | 3 · tab 3 |
-| `ShapWaterfall.tsx` | factor rows inside 85:296 | 3 · tab 3 |
-| `HsCodeTab.tsx` | Results · HS code (87:378) | 3 · tab 4 |
-| `ImpactTab.tsx` | Results · Impact (88:419) | 3 · tab 5 |
-| `ConfirmCeisaModal.tsx` | Submit confirm (94:460) | 4 |
-| `CeisaSubmitModal.tsx` | CEISA response (96:503) — exact string "Simulated CEISA Response (Demo Mode)" | 4 |
-| `ShareModal.tsx` | Share (100:1845) | after submit |
+| `extractDocuments(files)` | `POST /api/extract` (multipart: 3 files) | **ML pipeline** — Docling → PaddleOCR → LayoutLMv3 → TableTransformer → Ollama |
+| `validateDocuments({ extraction_id, documents })` | `POST /api/validate` | **Backend** — Permendag rules + cross-doc + XGBoost/SHAP risk |
+| `predictHsCode({ item_description, ... })` | `POST /api/predict-hs-code` | **ML** — HS code classifier |
+| `submitCeisa({ validation_id })` | `POST /api/submit-ceisa` | **Backend** — builds CEISA JSON, returns a **simulated** ack (`simulated: true`) |
+| `getHealth()` | `GET /api/health` | **Backend** |
 
-## Shared components — done, built from the Figma Components page (3:2)
+**Declaration flow (what the user does → what backend/ML must return):**
 
-| File | Figma component |
-|---|---|
-| `components/ui/button.tsx` | Button (5:19) |
-| `components/ui/badge.tsx` | Badge (62:24) |
-| `components/ui/metric-card.tsx` | Metric card (68:19) |
-| `components/ui/page-header.tsx` | Page header (68:18) |
-| `components/ui/tab-bar.tsx` | Tabs (85:348) |
-| `components/ui/risk-meter.tsx` | Risk meter (85:328) |
-| `components/ui/declaration-row.tsx` | Table row (68:20) |
-| `components/shell/Sidebar.tsx` | Sidebar (68:17) |
+```
+Upload 3 docs → /api/extract  → extraction_id + documents + confidence_scores + ocr_meta
+             → /api/validate  → risk_level + ml_risk_probability + warnings[] + shap_top_features[]
+             → /api/predict-hs-code → suggested_hs_code + confidence + reasoning + alternatives
+             → /api/submit-ceisa    → simulated: true + ceisa_ack + ceisa_payload
+```
 
-## lib/
+The UI renders **whatever the backend returns** — nothing is hardcoded. Risk,
+warnings, SHAP factors, extracted-field confidence, HS-code, and the duties calc
+all come from these responses. Right now `NEXT_PUBLIC_USE_FIXTURES=true` serves
+`fixtures/*.json` (which match the contract shapes) so the UI works before the
+backend is ready.
 
-| File | Purpose |
-|---|---|
-| `lib/api.ts` | Typed fetch wrappers per API_CONTRACT — zod-validated |
-| `lib/utils.ts` | `cn()`, `formatRupiah` (Rp), `formatDate` (day-first) |
+### To go live against the real backend
 
-## Fixtures (fixtures/)
+1. Backend serves the 5 endpoints at `/api/*` matching `docs/API_CONTRACT.md`
+   (including CORS for `http://localhost:3000`/`3005`, and `simulated: true` on
+   `/api/submit-ceisa`). The `src/main.py:50` hardcoded mock must be replaced so
+   `/api/extract` processes the real uploaded files.
+2. Frontend: set `NEXT_PUBLIC_USE_FIXTURES=false` and `BACKEND_URL` → restart `pnpm dev`.
+3. Nothing else changes — the same components render the real data.
 
-Contract-shaped mock responses — develop against these until the backend
-serves `/api/*` for real. `canonical_run.json` is the pre-computed demo run.
+---
 
-## Hard rules
+## Folder structure
 
-- CEISA is **simulated** — never call a real DJBC endpoint (ADR-002, FR-5.5)
-- No auth anywhere (ADR-009) — app opens straight into /dashboard
-- No invented metrics (ADR-012/016)
-- Sentence case; Rp for currency; day-first dates; Tabler outline icons only
-- Every value uses a design token — no ad-hoc hex/px
+```
+dashboard/
+├── app/
+│   ├── page.tsx                     Landing page (public)
+│   ├── layout.tsx                   Root layout, fonts, metadata
+│   ├── dashboard/                   The app (no auth)
+│   │   ├── layout.tsx               Sidebar + content shell (ADR-015)
+│   │   ├── page.tsx                 Dashboard home (metrics/chart/attention — derived, lib/dashboard.ts)
+│   │   ├── new/page.tsx             New declaration workflow (upload→processing→results→submit)
+│   │   ├── history/page.tsx         History list + search/filters
+│   │   ├── history/[id]/page.tsx    Read-only detail (reuses Results)
+│   │   ├── settings/page.tsx        Impact-estimate assumptions (feed the Impact tab) + app info
+│   │   └── help/page.tsx            Glossary + FAQ
+│   └── api/backend/[...path]/route.ts   (proxy handled by next.config rewrite)
+├── components/
+│   ├── ui/                          Shared primitives (button, badge, modal, tab-bar, risk-meter, table row…)
+│   ├── landing/                     Landing sections (one file per Figma section)
+│   ├── shell/Sidebar.tsx            App nav
+│   ├── dashboard/                   Home widgets (RecentDeclarations, WeeklyChart, AttentionPanel, HistoryEmpty)
+│   └── declaration/                 The workflow: UploadZone, ExtractionProgress/Degraded, StageList,
+│                                    ResultsView + 5 tabs, Confirm/CeisaSubmit/Share modals…
+├── lib/
+│   ├── api.ts                       Typed API wrappers (zod) — the contract seam
+│   ├── results.ts                   Derive display data from extract/validate responses
+│   ├── customs.ts                   Duties & taxes calc (CIF/PPN/PPh) + effort estimate (ADR-016)
+│   ├── dashboard.ts                 Derive home metrics/chart/attention from the declarations list
+│   ├── settings.ts                  Impact-estimate assumptions (localStorage)
+│   ├── mock-data.ts                 Demo declarations (single source; swap for a backend fetch)
+│   └── utils.ts                     cn(), formatRupiah (Rp), formatDate (day-first)
+├── fixtures/                        Contract-shaped mock responses for dev (extract/validate/…)
+├── tailwind.config.ts               Design tokens → Tailwind
+└── app/globals.css                  CSS variable tokens (emerald #065F46 locked)
+```
+
+Each component/page file names the Figma frame it implements in a header comment.
+
+---
+
+## Conventions (so the merge stays clean)
+
+- **Never invent an API field or endpoint** — update `docs/API_CONTRACT.md` first, then both sides.
+- Sentence case copy; currency as **Rp** in the UI (IDR only inside the CEISA JSON); dates day-first (`5 Jul 2026`); Tabler outline icons; design tokens only (no ad-hoc hex/px).
+- TypeScript `strict: true`. Run `pnpm exec tsc --noEmit` before committing.
+
+## Status
+
+Frontend is **feature-complete** for the semifinal: landing, dashboard home,
+the full new-declaration workflow (upload → processing/degraded → results with 5
+real-data tabs → confirm → simulated CEISA), history + detail + share, settings,
+help. Currently running on fixtures; flip `NEXT_PUBLIC_USE_FIXTURES=false` once
+the backend serves the contract.
+
+**Known follow-up (needs backend):** the dashboard aggregate stats and the
+per-declaration History detail use demo data because there's no
+declarations/stats endpoint in the contract yet — add those endpoints and wire
+`lib/dashboard.ts` / the detail page to fetch.
