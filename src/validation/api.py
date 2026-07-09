@@ -25,7 +25,7 @@ from .extract_pipeline import (
 
 app = FastAPI(title="Validation Intelligence Layer API", version="0.1.0")
 
-app.middleware(
+app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
     allow_methods=["GET", "POST", "OPTIONS"],

@@ -88,7 +88,7 @@ class ConfidenceEngine:
         warnings = []
         for r in rule_results + cross_doc_results:
             if not r.passed:
-                warnings.append(r.message)
+                warnings.append(r.to_warning())
 
         validation_id = f"val_{uuid.uuid4().hex[:8]}"
 
