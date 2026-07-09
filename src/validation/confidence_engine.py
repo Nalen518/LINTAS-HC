@@ -1,8 +1,10 @@
-from typing import Dict, Any, List
+import uuid
+from typing import Dict, Any, List, Optional
 from .schema import ExtractedDocuments
 from .rule_engine import PermendagRuleEngine
 from .cross_document import CrossDocumentValidator
 from .ml_scoring import RiskScorer
+from . import store
 
 class ConfidenceEngine:
     def __init__(self):
@@ -10,7 +12,7 @@ class ConfidenceEngine:
         self.cross_doc_validator = CrossDocumentValidator()
         self.risk_scorer = RiskScorer()
 
-    def process_declaration(self, docs: ExtractedDocuments) -> Dict[str, Any]:
+    def process_declaration(self, docs: ExtractedDocuments, extraction_id: Optional[str]) -> Dict[str, Any]:
         # 1. Evaluate Permendag Rules
         rule_results = self.rule_engine.evaluate(docs)
         compliance_score = self.rule_engine.get_compliance_score(rule_results)
@@ -87,17 +89,38 @@ class ConfidenceEngine:
         for r in rule_results + cross_doc_results:
             if not r.passed:
                 warnings.append(r.message)
-                
-        # Add SHAP explanations if not already present
-        for w in ml_result["top_warnings"]:
-            if not any(w in existing_w for existing_w in warnings):
-                warnings.append(f"AI Explainer Note: {w} contributed to the risk score.")
-                
-        return {
+
+        validation_id = f"val_{uuid.uuid4().hex[:8]}"
+
+        result = {
+            "validation_id": validation_id,
             "confidence_score": round(final_score, 2),
-            "risk_level": risk_level,
             "compliance_score": compliance_score,
+            "risk_level": risk_level,
             "ml_risk_probability": round(ml_risk_probability, 2),
             "warnings": warnings,
-            "ml_explanations": ml_result["top_warnings"]
+            "shap_top_features": ml_result.get("shap_top_features", []),
+        }   
+
+        store.validations[validation_id] = {
+            "extraction_id": extraction_id,
+            "documents": docs,
+            "result": result,
         }
+
+        return result
+
+
+        # # Add SHAP explanations if not already present
+        # for w in ml_result["top_warnings"]:
+        #     if not any(w in existing_w for existing_w in warnings):
+        #         warnings.append(f"AI Explainer Note: {w} contributed to the risk score.")
+                
+        # return {
+        #     "confidence_score": round(final_score, 2),
+        #     "risk_level": risk_level,
+        #     "compliance_score": compliance_score,
+        #     "ml_risk_probability": round(ml_risk_probability, 2),
+        #     "warnings": warnings,
+        #     "ml_explanations": ml_result["top_warnings"]
+        # }

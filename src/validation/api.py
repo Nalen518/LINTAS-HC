@@ -14,12 +14,12 @@ from .hs_code_predictor import predict_hs_code
 from .confidence_engine import ConfidenceEngine
 from . import store
 from .extract_pipeline import (
-    Extracterror,
+    ExtractError,
     REQUIRED_FIELDS,
     fixture_with_cache_note,
     load_canonical_extract,
     load_fixture_extract,
-    run_real_pipeline,
+    run_pipeline,
     validate_upload,
 )
 
@@ -73,7 +73,7 @@ async def extract_documents(commercial_invoice: Optional[UploadFile] = File(None
             data = await upload.read() if upload is not None else b""
             validate_upload(field, filename, data)
             files [field] = (filename, data)
-    except Extracterror as e:
+    except ExtractError as e:
         return _error_response(e.error_code, e.message, e.details, e.status_code)
     
     if mode == "fixture":
@@ -92,8 +92,8 @@ async def extract_documents(commercial_invoice: Optional[UploadFile] = File(None
         return response
     
     try:
-        return run_real_pipeline(files)
-    except Extracterror as e:
+        return run_pipeline(files)
+    except ExtractError as e:
         return _error_response(e.error_code, e.message, e.details, e.status_code)
     except _error_response as e:
         return _error_response("OCR_PIPELINE_FAILURE", str(e), status_code=500)
@@ -101,7 +101,7 @@ async def extract_documents(commercial_invoice: Optional[UploadFile] = File(None
 
 
 
-@app.post("api/validate")
+@app.post("/api/validate")
 async def validate_declaration(payload: ValidationRequest):
     try:
         result = engine.process_declaration(payload.documents, extraction_id=payload.extraction_id)
@@ -114,10 +114,10 @@ async def predict_hs_code_endpoint(payload: PredictHsCodeRequest):
     return predict_hs_code(
         payload.item_description, 
         payload.country_of_origin or "", 
-        payload.unit_of_measurement or "",
+        payload.unit_of_measure or "",
     )
 
-@app.post("api/submit-ceisa")
+@app.post("/api/submit-ceisa")
 async def submit_ceisa(payload: SubmitCeisaRequest):
     record = store.validations.get(payload.validation_id)
     if record is None:
@@ -177,7 +177,7 @@ async def submit_ceisa(payload: SubmitCeisaRequest):
         },
     }
 
-@app.get("api/health")
+@app.get("/api/health")
 async def healt():
     checks = {}
     try:
