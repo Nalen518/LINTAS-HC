@@ -1,32 +1,76 @@
 {
   "mandatory_fields": [
-    {"document": "commercial_invoice", "field": "importer_tax_id", "message": "Importer Tax ID is missing."},
-    {"document": "commercial_invoice", "field": "importer_name", "message": "Importer Name is missing."},
-    {"document": "commercial_invoice", "field": "currency", "message": "Currency is missing."},
-    {"document": "packing_list", "field": "total_gross_weight", "message": "Packing List total gross weight is missing."},
-    {"document": "bill_of_lading", "field": "total_gross_weight", "message": "Bill of Lading total gross weight is missing."}
+    {
+      "document": "commercial_invoice",
+      "field": "importer_tax_id",
+      "message": "Importer Tax ID is missing.",
+      "rule_id": "MISSING_IMPORTER_TAX_ID",
+      "severity": "high",
+      "suggested_fix": "Provide the importer's Tax ID (NPWP) on the commercial invoice."
+    },
+    {
+      "document": "commercial_invoice",
+      "field": "importer_name",
+      "message": "Importer Name is missing.",
+      "rule_id": "MISSING_IMPORTER_NAME",
+      "severity": "high",
+      "suggested_fix": "Provide the importer's name on the commercial invoice."
+    },
+    {
+      "document": "commercial_invoice",
+      "field": "currency",
+      "message": "Currency is missing.",
+      "rule_id": "MISSING_CURRENCY",
+      "severity": "medium",
+      "suggested_fix": "Specify the invoice currency (e.g. USD, IDR)."
+    },
+    {
+      "document": "packing_list",
+      "field": "total_gross_weight",
+      "message": "Packing List total gross weight is missing.",
+      "rule_id": "MISSING_PL_WEIGHT",
+      "severity": "medium",
+      "suggested_fix": "Provide the total gross weight on the packing list."
+    },
+    {
+      "document": "bill_of_lading",
+      "field": "total_gross_weight",
+      "message": "Bill of Lading total gross weight is missing.",
+      "rule_id": "MISSING_BL_WEIGHT",
+      "severity": "medium",
+      "suggested_fix": "Provide the total gross weight on the bill of lading."
+    }
   ],
   "hs_code_restrictions": [
     {
       "prefix": "72",
       "description": "Besi dan Baja",
       "required_permits": ["PI_Besi_Baja"],
-      "message": "Import Permit (PI_Besi_Baja) required for Iron and Steel (HS 72).",
-      "risk_weight": 25
+      "message": "Import Permit PI_Besi_Baja required for HS 72.",
+      "risk_weight": 25,
+      "rule_id": "PI_BESI_BAJA",
+      "severity": "high",
+      "suggested_fix": "Attach PI_Besi_Baja document or update HS code."
     },
     {
       "prefix": "61",
       "description": "Pakaian dan Aksesori Pakaian",
       "required_permits": ["LS_Tekstil"],
-      "message": "Surveyor Report (LS_Tekstil) required for Garments (HS 61).",
-      "risk_weight": 15
+      "message": "Surveyor Report LS_Tekstil required for HS 61.",
+      "risk_weight": 15,
+      "rule_id": "LS_TEKSTIL",
+      "severity": "medium",
+      "suggested_fix": "Attach LS_Tekstil surveyor report or update HS code."
     },
     {
       "prefix": "87",
       "description": "Kendaraan Bermotor",
       "required_permits": ["PI_Kendaraan"],
-      "message": "Import Permit (PI_Kendaraan) required for Vehicles (HS 87).",
-      "risk_weight": 30
+      "message": "Import Permit PI_Kendaraan required for HS 87.",
+      "risk_weight": 30,
+      "rule_id": "PI_KENDARAAN",
+      "severity": "high",
+      "suggested_fix": "Attach PI_Kendaraan import permit or update HS code."
     }
   ]
 }

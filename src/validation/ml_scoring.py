@@ -41,7 +41,7 @@ class RiskScorer:
 
     def predict_risk(self, features: dict):
         if not self.explainer:
-            return {"high_risk_probability": 0.0, "top_warnings": ["Model not loaded."]}
+            return {"high_risk_probability": 0.0, "top_warnings": ["Model not loaded."], "shap_top_features": []}
             
         df = pd.DataFrame([features])
         df = df[self.feature_names]
@@ -77,8 +77,17 @@ class RiskScorer:
         # Sort by contribution descending
         contributions = sorted(contributions, key=lambda x: x["contribution"], reverse=True)
         top_warnings = [c["warning_message"] for c in contributions[:3]]
-        
+        shap_top_features = [
+            {
+                "feature": c["feature"],
+                "value": round(float(c["contribution"]), 4),
+                "label": c["warning_message"],
+            }
+            for c in contributions[:3]
+        ]
+
         return {
             "high_risk_probability": float(high_risk_prob),
-            "top_warnings": top_warnings
+            "top_warnings": top_warnings,
+            "shap_top_features": shap_top_features
         }
