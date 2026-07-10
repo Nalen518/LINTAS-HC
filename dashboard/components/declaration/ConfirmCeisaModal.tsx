@@ -41,7 +41,7 @@ export function ConfirmCeisaModal({
         </h2>
         <p className="text-sm text-muted-foreground">
           You&apos;re about to submit this declaration to CEISA. This is a demo
-          simulation — nothing is transmitted to DJBC.
+          simulation. Nothing is transmitted to DJBC.
         </p>
 
         {hasRisk && (

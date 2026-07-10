@@ -20,7 +20,7 @@ export function HsCodeTab({
           HS code classification
         </h3>
         <p className="text-body-sm text-faint">
-          Prediction unavailable — the classifier could not be reached. The
+          Prediction unavailable. The classifier could not be reached. The
           declared code {declaredHsCode ?? "—"} will be used as-is.
         </p>
       </div>
@@ -69,7 +69,7 @@ export function HsCodeTab({
           </p>
           {!matchesDeclared && declaredHsCode && (
             <p className="text-body-sm text-destructive">
-              Declared code {declaredHsCode} differs from the predicted code —
+              Declared code {declaredHsCode} differs from the predicted code,
               this contributes to the risk score.
             </p>
           )}
@@ -100,7 +100,7 @@ export function HsCodeTab({
       )}
 
       <p className="text-body-sm text-faint">
-        Confirm the code matches the actual goods before submitting — you can
+        Confirm the code matches the actual goods before submitting. You can
         override the prediction if needed.
       </p>
     </div>

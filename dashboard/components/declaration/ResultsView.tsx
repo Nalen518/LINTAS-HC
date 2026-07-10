@@ -81,7 +81,7 @@ export function ResultsView({
       setSubmitError(
         err && typeof err === "object" && "message" in err
           ? String((err as { message: unknown }).message)
-          : "Submission failed — please try again.",
+          : "Submission failed. Please try again.",
       );
     } finally {
       setSubmitting(false);

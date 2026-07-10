@@ -36,7 +36,6 @@ export function Hero() {
         </p>
         <Button
           size="md"
-          animated
           className="w-fit"
           onClick={() => router.push("/dashboard")}
         >

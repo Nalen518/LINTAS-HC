@@ -188,12 +188,43 @@ Builds a CEISA-compliant JSON payload from a validated declaration and returns a
     "status": "RECEIVED",
     "pib_number": "PIB-2026-123456",
     "received_at": "2026-06-29T14:23:15+07:00",
-    "estimated_clearance_lane": "GREEN"
+    "estimated_clearance_lane": "GREEN",
+    "response_code": "200",
+    "response_message": "Request diterima (request accepted)"
   }
 }
 ```
 
-**`estimated_clearance_lane`** values: `"GREEN"` (low risk, auto-release), `"YELLOW"` (doc review), `"RED"` (physical inspection). Derived from our internal risk score, not from real CEISA.
+### Rejected outcome
+
+CEISA (beacukai) assigns a response code to every submission. When the payload
+fails validation it returns a domain error code instead of a PIB:
+
+```json
+{
+  "simulated": true,
+  "ceisa_payload": { /* the payload that was sent */ },
+  "ceisa_ack": {
+    "status": "REJECTED",
+    "pib_number": "",
+    "received_at": "2026-06-29T14:23:15+07:00",
+    "response_code": "1028",
+    "response_message": "Elemen mandatory, wajib terdapat pada data json yang dikirimkan (mandatory element missing)"
+  }
+}
+```
+
+**`status`** — `"RECEIVED"` (accepted, PIB assigned) or `"REJECTED"` (no PIB).
+
+**`response_code` / `response_message`** — the code beacukai returns. On accept
+it's a REST code (`200`/`201`); on reject it's a CEISA error code (e.g. `1008`,
+`1023`, `1028`, `1042`) with the Indonesian description. Source of codes:
+`openapi.beacukai.go.id` (REST + Error Response Code pages). The backend relays
+whatever beacukai returns; the frontend just displays it.
+
+**`estimated_clearance_lane`** (accepted only) values: `"GREEN"` (low risk,
+auto-release), `"YELLOW"` (doc review), `"RED"` (physical inspection). Derived
+from our internal risk score, not from real CEISA. Omitted on rejection.
 
 **`simulated: true`** is required in every response from this endpoint. Frontend uses this flag to render the "Demo Mode" label.
 

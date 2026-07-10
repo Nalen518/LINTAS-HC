@@ -46,7 +46,7 @@ export function RiskShapTab({ validation }: { validation: ValidateResponse }) {
 
       <div className="mt-4 rounded bg-elevated px-3.5 py-3">
         <p className="text-body-sm text-muted-foreground">
-          Result: {validation.risk_level} ({score} / 100) — review the flagged
+          Result: {validation.risk_level} ({score} / 100). Review the flagged
           factors before submitting to CEISA.
         </p>
       </div>

@@ -35,14 +35,12 @@ export const buttonVariants = cva(
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
-  animated?: boolean;
 }
 
 export function Button({
   className,
   variant,
   size,
-  animated = false,
   children,
   ...props
 }: ButtonProps) {
@@ -50,7 +48,6 @@ export function Button({
     <button
       className={cn(
         buttonVariants({ variant, size }),
-        animated && "animated-btn",
         className,
       )}
       {...props}

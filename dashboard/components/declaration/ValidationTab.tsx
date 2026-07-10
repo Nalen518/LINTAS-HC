@@ -115,7 +115,7 @@ export function ValidationTab({
         <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-4">
           <IconCircleCheck size={20} stroke={1.75} className="text-success" />
           <span className="text-sm text-foreground">
-            No issues found — all Permendag and cross-document checks passed.
+            No issues found. All Permendag and cross-document checks passed.
           </span>
         </div>
       )}
