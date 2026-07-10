@@ -17,7 +17,7 @@ import {
 // localStorage. Read-only application info below. Theme toggle deferred (R14).
 const APP_INFO: { label: string; value: string; badge?: boolean }[] = [
   { label: "Version", value: "0.9.0 · semifinal MVP" },
-  { label: "Mode", value: "Demo — CEISA submission simulated", badge: true },
+  { label: "Mode", value: "Demo · CEISA submission simulated", badge: true },
   { label: "Processing", value: "Local · offline (Ollama llama3.2)" },
   {
     label: "Models",
@@ -100,7 +100,6 @@ export default function SettingsPage() {
       >
         <Button
           size="default"
-          animated={isDirty}
           disabled={!isDirty}
           onClick={handleSave}
         >

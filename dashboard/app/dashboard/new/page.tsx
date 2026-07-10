@@ -45,7 +45,7 @@ function degradedMessage(errors: OcrError[]): string {
   const stageKey = errors[0]?.stage ?? "";
   const stage = PIPELINE_STAGES.find((s) => s.key === stageKey);
   const name = stage?.name ?? "A stage";
-  return `${name} didn't complete on this document. LINTAS finished using the remaining stages — some fields may be less complete and should be reviewed.`;
+  return `${name} didn't complete on this document. LINTAS finished using the remaining stages, so some fields may be less complete and should be reviewed.`;
 }
 
 const ALL_WAITING: StageStatus[] = Array(STAGE_COUNT).fill("waiting");
@@ -162,7 +162,7 @@ export default function NewDeclarationPage() {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: unknown }).message)
-          : "Backend unreachable — start the FastAPI server or set NEXT_PUBLIC_USE_FIXTURES=true.";
+          : "Backend unreachable. Start the FastAPI server or set NEXT_PUBLIC_USE_FIXTURES=true.";
       setExtractError(message);
       setPhase("upload");
     }

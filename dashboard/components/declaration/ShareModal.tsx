@@ -57,7 +57,7 @@ export function ShareModal({
         </div>
 
         <p className="text-xs text-faint">
-          Link expires in 7 days · demo only — the link is illustrative.
+          Link expires in 7 days · demo only. The link is illustrative.
         </p>
 
         <div className="flex justify-end">

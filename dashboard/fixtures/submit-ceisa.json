@@ -14,6 +14,8 @@
     "status": "RECEIVED",
     "pib_number": "PIB-2026-0142",
     "received_at": "2026-07-05T14:32:00+07:00",
-    "estimated_clearance_lane": "YELLOW"
+    "estimated_clearance_lane": "YELLOW",
+    "response_code": "200",
+    "response_message": "Request diterima (request accepted)"
   }
 }

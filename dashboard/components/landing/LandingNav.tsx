@@ -17,7 +17,6 @@ export function LandingNav() {
         </a>
         <Button
           size="default"
-          animated
           onClick={() => router.push("/dashboard")}
         >
           Open dashboard

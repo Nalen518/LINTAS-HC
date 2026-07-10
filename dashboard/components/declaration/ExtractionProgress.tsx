@@ -50,7 +50,7 @@ export function ExtractionProgress({
         </div>
       ) : (
         <span className="text-body-sm text-faint">
-          Runs locally on your machine — typically 30–60 seconds.
+          Runs locally on your machine, typically 30–60 seconds.
         </span>
       )}
     </div>

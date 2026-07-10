@@ -1,4 +1,4 @@
-import { IconCheck } from "@tabler/icons-react";
+import { IconCheck, IconX } from "@tabler/icons-react";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -7,14 +7,12 @@ import type { SubmitCeisaResponse } from "@/lib/api";
 // Figma: "New declaration — CEISA response" modal (96:689). PRD §5.5 FR-5.x.
 // Renders the SIMULATED /api/submit-ceisa response (ADR-002). MUST show the
 // exact string "Simulated CEISA Response (Demo Mode)" (FR-5.5) — this is a
-// credibility rule; never contact real DJBC.
-const LANE: Record<
-  SubmitCeisaResponse["ceisa_ack"]["estimated_clearance_lane"],
-  { label: string; text: string }
-> = {
-  GREEN: { label: "Green — auto-release", text: "text-success" },
-  YELLOW: { label: "Yellow — document check", text: "text-warning" },
-  RED: { label: "Red — physical inspection", text: "text-destructive" },
+// credibility rule; never contact real DJBC. Beacukai assigns a response code
+// to every submission: a REST code on accept, or a CEISA error code on reject.
+const LANE: Record<"GREEN" | "YELLOW" | "RED", { label: string; text: string }> = {
+  GREEN: { label: "Green (auto-release)", text: "text-success" },
+  YELLOW: { label: "Yellow (document check)", text: "text-warning" },
+  RED: { label: "Red (physical inspection)", text: "text-destructive" },
 };
 
 const MONTHS = [
@@ -70,7 +68,10 @@ export function CeisaSubmitModal({
 }) {
   if (!response) return null;
   const { ceisa_ack, ceisa_payload } = response;
-  const lane = LANE[ceisa_ack.estimated_clearance_lane];
+  const rejected = ceisa_ack.status === "REJECTED";
+  const lane = ceisa_ack.estimated_clearance_lane
+    ? LANE[ceisa_ack.estimated_clearance_lane]
+    : null;
   const payloadJson = JSON.stringify(ceisa_payload, null, 2);
 
   const registrationNo =
@@ -89,7 +90,7 @@ export function CeisaSubmitModal({
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `${ceisa_ack.pib_number}.json`;
+    anchor.download = `${ceisa_ack.pib_number || "ceisa-response"}.json`;
     anchor.click();
     URL.revokeObjectURL(url);
   }
@@ -103,14 +104,23 @@ export function CeisaSubmitModal({
     >
       <div className="flex flex-col gap-4 px-7 pb-6 pt-7">
         <div className="flex items-center gap-3">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-success">
-            <IconCheck size={20} stroke={2.5} className="text-inverse" />
+          <span
+            className={cn(
+              "flex size-9 shrink-0 items-center justify-center rounded-full",
+              rejected ? "bg-destructive" : "bg-success",
+            )}
+          >
+            {rejected ? (
+              <IconX size={20} stroke={2.5} className="text-inverse" />
+            ) : (
+              <IconCheck size={20} stroke={2.5} className="text-inverse" />
+            )}
           </span>
           <h2
             id="ceisa-response-title"
             className="text-2xl font-medium text-foreground"
           >
-            Submission received
+            {rejected ? "Submission rejected" : "Submission received"}
           </h2>
         </div>
 
@@ -122,25 +132,50 @@ export function CeisaSubmitModal({
         </div>
 
         <p className="text-body-sm text-faint">
-          Synthetic acknowledgment — no data was transmitted to DJBC.
+          {rejected
+            ? "CEISA would return this validation error. No data was transmitted to DJBC."
+            : "Synthetic acknowledgment. No data was transmitted to DJBC."}
         </p>
 
-        <div className="flex flex-col gap-2.5 rounded border border-border p-3.5">
-          {registrationNo && (
-            <DetailRow label="Registration no." value={registrationNo} mono />
-          )}
-          <DetailRow label="PIB number" value={ceisa_ack.pib_number} mono />
-          {ajuNumber && <DetailRow label="Aju number" value={ajuNumber} mono />}
-          <DetailRow
-            label="Customs channel"
-            value={lane.label}
-            valueClass={lane.text}
-          />
-          <DetailRow
-            label="Received"
-            value={formatTimestamp(ceisa_ack.received_at)}
-          />
-        </div>
+        {rejected ? (
+          // Rejection: the beacukai error code is the headline result.
+          ceisa_ack.response_code && (
+            <div className="flex flex-col gap-1 rounded border border-destructive bg-elevated p-3.5">
+              <span className="font-mono text-sm font-medium text-destructive">
+                Error {ceisa_ack.response_code}
+              </span>
+              <span className="text-body-sm text-muted-foreground">
+                {ceisa_ack.response_message}
+              </span>
+            </div>
+          )
+        ) : (
+          // Accept: acknowledgment details, including the REST response code.
+          <div className="flex flex-col gap-2.5 rounded border border-border p-3.5">
+            {registrationNo && (
+              <DetailRow label="Registration no." value={registrationNo} mono />
+            )}
+            <DetailRow label="PIB number" value={ceisa_ack.pib_number} mono />
+            {ajuNumber && <DetailRow label="Aju number" value={ajuNumber} mono />}
+            {ceisa_ack.response_code && (
+              <DetailRow
+                label="Response code"
+                value={`${ceisa_ack.response_code} · ${ceisa_ack.response_message ?? ""}`}
+              />
+            )}
+            {lane && (
+              <DetailRow
+                label="Customs channel"
+                value={lane.label}
+                valueClass={lane.text}
+              />
+            )}
+            <DetailRow
+              label="Received"
+              value={formatTimestamp(ceisa_ack.received_at)}
+            />
+          </div>
+        )}
 
         <span className="text-xs font-medium text-faint">
           Transmitted payload (simulated)
@@ -153,7 +188,11 @@ export function CeisaSubmitModal({
           <Button variant="secondary" onClick={downloadJson}>
             Download JSON
           </Button>
-          <Button onClick={onDone}>Back to dashboard</Button>
+          {rejected ? (
+            <Button onClick={onClose}>Back to review</Button>
+          ) : (
+            <Button onClick={onDone}>Back to dashboard</Button>
+          )}
         </div>
       </div>
     </Modal>

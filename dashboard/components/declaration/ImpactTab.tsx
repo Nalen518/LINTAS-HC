@@ -157,13 +157,13 @@ export function ImpactTab({
           {formatRupiah(effort.staffRatePerHour)} / hour staff cost.
         </span>
         <span className="text-xs text-faint">
-          Estimate based on the assumptions shown — set your own manual baseline
+          Estimate based on the assumptions shown. Set your own manual baseline
           and staff rate in Settings.
         </span>
       </div>
 
       <p className="text-body-sm text-faint">
-        Estimated from current rates — final amounts are confirmed by CEISA on
+        Estimated from current rates. Final amounts are confirmed by CEISA on
         submission.
       </p>
     </div>

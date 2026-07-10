@@ -25,7 +25,7 @@ const STATUS_LABEL: Record<StageStatus, string> = {
   done: "Done",
   processing: "Processing…",
   waiting: "Waiting",
-  skipped: "Skipped — fallback used",
+  skipped: "Skipped (fallback used)",
 };
 
 const STATUS_TEXT: Record<StageStatus, string> = {

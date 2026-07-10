@@ -1,0 +1,18 @@
+{
+  "simulated": true,
+  "ceisa_payload": {
+    "nomor_aju": "000040-062026-070526",
+    "pib": "",
+    "hs_code": "8471.30.00",
+    "cif_idr": 788125000,
+    "status": "REJECTED",
+    "mode": "SIMULATED"
+  },
+  "ceisa_ack": {
+    "status": "REJECTED",
+    "pib_number": "",
+    "received_at": "2026-07-05T14:32:00+07:00",
+    "response_code": "1028",
+    "response_message": "Elemen mandatory, wajib terdapat pada data json yang dikirimkan (mandatory element missing)"
+  }
+}

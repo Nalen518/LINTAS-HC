@@ -40,7 +40,7 @@ function validateFile(file: File): string | null {
   const hasValidExtension = ACCEPTED_EXTENSIONS.some((ext) =>
     name.endsWith(ext),
   );
-  if (!hasValidExtension) return "Couldn't read this file — try a clearer scan";
+  if (!hasValidExtension) return "Couldn't read this file. Try a clearer scan";
   if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024)
     return `File is larger than ${MAX_FILE_SIZE_MB} MB`;
   return null;

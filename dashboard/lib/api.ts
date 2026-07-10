@@ -161,10 +161,15 @@ export async function predictHsCode(payload: {
 // — `simulated: true` is required in every response and drives the Demo Mode
 // label. ceisa_payload is an opaque backend-built object (rendered as JSON).
 const CeisaAckSchema = z.object({
-  status: z.string(),
-  pib_number: z.string(),
+  status: z.string(), // "RECEIVED" | "REJECTED"
+  pib_number: z.string(), // empty on rejection
   received_at: z.string(),
-  estimated_clearance_lane: z.enum(["GREEN", "YELLOW", "RED"]),
+  // Present on accept only (derived from our risk score).
+  estimated_clearance_lane: z.enum(["GREEN", "YELLOW", "RED"]).optional(),
+  // The code beacukai returns: a REST code (200/201) on accept, or a CEISA
+  // domain error code (1008/1023/1028/1042) with its message on rejection.
+  response_code: z.string().optional(),
+  response_message: z.string().optional(),
 });
 
 const SubmitCeisaResponseSchema = z.object({
@@ -178,7 +183,14 @@ export async function submitCeisa(payload: {
   validation_id: string;
 }): Promise<SubmitCeisaResponse> {
   if (USE_FIXTURES) {
-    const fixture = (await import("@/fixtures/submit-ceisa.json")).default;
+    // Demo hook: /dashboard/new?sim=rejected returns a CEISA rejection so the
+    // error-code state is reachable without a real backend failure.
+    const rejected =
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("sim") === "rejected";
+    const fixture = rejected
+      ? (await import("@/fixtures/submit-ceisa-rejected.json")).default
+      : (await import("@/fixtures/submit-ceisa.json")).default;
     await new Promise((resolve) => setTimeout(resolve, FIXTURE_SHORT_MS));
     return SubmitCeisaResponseSchema.parse(fixture);
   }
