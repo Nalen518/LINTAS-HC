@@ -1,19 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
 import { formatRupiah } from "@/lib/utils";
-import { computeImpact, computeEffortSaved } from "@/lib/customs";
-import {
-  loadImpactSettings,
-  DEFAULT_IMPACT_SETTINGS,
-} from "@/lib/settings";
+import { computeImpact } from "@/lib/customs";
+import { loadImpactSettings, DEFAULT_IMPACT_SETTINGS } from "@/lib/settings";
 import type { ExtractResponse } from "@/lib/api";
 
-// Figma: "Results · Impact" tab content (88:645). FR-7.x as amended by ADR-016.
-// (1) Duties & taxes — a real calculation from the declared customs value +
-//     HS code. (2) Estimated effort saved — labeled "Estimate", assumptions on
-//     screen and adjustable in Settings. No invented metrics.
+// Figma: "Results · Impact" tab content (88:645). FR-7.x. Duties & taxes — a
+// real calculation from the declared customs value + HS code (CIF = USD×KURS,
+// import duty, PPN 11%, PPh 22 2.5%). No invented metrics.
 
 type CiDoc = {
   total_value?: number;
@@ -41,36 +36,12 @@ function CalcRow({
   );
 }
 
-function EffortStat({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string;
-  accent?: boolean;
-}) {
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-xs text-faint">{label}</span>
-      <span
-        className={cn(
-          "text-2xl font-medium",
-          accent ? "text-primary" : "text-foreground",
-        )}
-      >
-        {value}
-      </span>
-    </div>
-  );
-}
-
 export function ImpactTab({
   documents,
 }: {
   documents: ExtractResponse["documents"];
 }) {
-  // Read the user's Impact assumptions (Settings, ADR-016) after mount.
+  // KURS assumption from Settings (ADR-016), read after mount.
   const [settings, setSettings] = useState(DEFAULT_IMPACT_SETTINGS);
   useEffect(() => setSettings(loadImpactSettings()), []);
 
@@ -80,12 +51,6 @@ export function ImpactTab({
   const hsCode = ci?.items?.[0]?.hs_code ?? null;
 
   const impact = computeImpact(totalValue, hsCode, settings.kurs);
-  const effort = computeEffortSaved({
-    manualPrepHours: settings.manualPrepHours,
-    staffRatePerHour: settings.staffRatePerHour,
-  });
-  const savedHrs = (Math.floor(effort.savedHours * 10) / 10).toString();
-  const manualLabel = `~${settings.manualPrepHours} hrs`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -135,31 +100,6 @@ export function ImpactTab({
             {formatRupiah(impact.total)}
           </span>
         </div>
-      </div>
-
-      {/* Estimated effort saved — labeled Estimate */}
-      <div className="flex flex-col gap-4 rounded-lg border border-border bg-card p-6">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-foreground">
-            Estimated effort saved
-          </span>
-          <span className="rounded-sm border border-border bg-elevated px-2 py-0.5 text-badge text-muted-foreground">
-            Estimate
-          </span>
-        </div>
-        <div className="flex gap-10">
-          <EffortStat label="Manual prep (assumed)" value={manualLabel} />
-          <EffortStat label="With LINTAS" value="~2 min" />
-          <EffortStat label="Time saved" value={`~${savedHrs} hrs`} accent />
-        </div>
-        <span className="text-body-sm text-muted-foreground">
-          ≈ {formatRupiah(effort.costSaved)} per declaration, at an assumed{" "}
-          {formatRupiah(effort.staffRatePerHour)} / hour staff cost.
-        </span>
-        <span className="text-xs text-faint">
-          Estimate based on the assumptions shown. Set your own manual baseline
-          and staff rate in Settings.
-        </span>
       </div>
 
       <p className="text-body-sm text-faint">
